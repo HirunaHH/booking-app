@@ -1,0 +1,6 @@
+{
+    "options":{
+        "Lunch":["Chicken", "Fish", "Veg", "None"],
+        "Breakfast":["Hoppers", "String Hoppers", "Sandwitches","None"]
+    }
+}

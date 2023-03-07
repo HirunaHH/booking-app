@@ -1,0 +1,52 @@
+{
+    "schedules":[
+        {
+            "id":1,
+            "name":"Default Schedule",
+            "preferences":{
+                "Mon":{
+                    "Lunch":"Chicken",
+                    "Breakfast":"Hoppers"
+                },
+                "Tue":{
+                    "Lunch":"Veg",
+                    "Breakfast":"None"
+                },
+                "Wed":{
+                    "Lunch":"None",
+                    "Breakfast":"None"
+                },
+                "Thu":{
+                    "Lunch":"Fish",
+                    "Breakfast":"None"
+                },
+                "Fri":{
+                    "Lunch":"Fish",
+                    "Breakfast":"None"
+                }
+            },
+            "recurring":"2 Weeks",
+            "status":"Active"
+        },
+        {
+            "id":2,
+            "name":"Alt Schedule",
+            "preferences":{
+                "Tue":{
+                    "Lunch":"Veg",
+                    "Breakfast":"None"
+                },
+                "Thu":{
+                    "Lunch":"Fish",
+                    "Breakfast":"None"
+                },
+                "Fri":{
+                    "Lunch":"Fish",
+                    "Breakfast":"None"
+                }
+            },
+            "recurring":"Never",
+            "status":"Inactive"
+        }
+    ]
+}

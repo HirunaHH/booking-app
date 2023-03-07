@@ -1,0 +1,32 @@
+{
+  "logs":[
+      
+      {
+        "id":"5",
+        "date": "2023/03/02",
+        "status": "Upcoming",
+        "preferences": {
+          "Lunch":"Fish"
+        },
+        "isActive":true
+      },
+      {
+        "id":"6",
+        "date": "2023/03/03",
+        "status": "Upcoming",
+        "preferences": {
+            "Lunch":"Fish"
+        },
+        "isActive":"true"
+      },
+      {
+        "id":"7",
+        "date": "2023/03/04",
+        "status": "Upcoming",
+        "preferences": {
+            "Lunch":"Veg"
+        },
+        "isActive":false
+      }
+  ]
+}
