@@ -1,5 +1,27 @@
 import ballerina/http;
 
+# OAuth Credentials and 
+# + clientID - OAuth Client ID
+# + clientSecret - OAuth Client Secret  
+# + refreshToken - Refresh Token 
+# + accessToken - Access Token 
+public type OAuthConfigData record {|
+    string clientID;
+    string clientSecret;
+    string refreshToken;
+    string accessToken;
+|};
+
+# Spreadhseet Configuration
+# + spreadsheetURL - URL to the spreadsheet  
+# + sheetName - worksheet name
+# + tableHeaders - Headers of the worksheet
+public type SpreadsheetConfigDara record {|
+    string spreadsheetURL;
+    string sheetName;
+    string[] tableHeaders;
+|};
+
 # type to define errors with a message
 # + message - error message
 public type OfficeBookingAppError record {|
@@ -35,5 +57,12 @@ public type OfficeBookingAppServerError record {|
 public type OfficeBookingAppSuccess record {|
     *http:Ok;
     DbOperationSuccessResult body;
+|};
+
+# Description
+# + body - error message
+public type OfficeBookingAppBadRequestError record{|
+    *http:BadRequest;
+    OfficeBookingAppError body;
 |};
  

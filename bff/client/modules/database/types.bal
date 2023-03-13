@@ -29,11 +29,11 @@ public type Booking record {|
     time:Date date;
     string email;
     json preferences;
-    string status;
-    boolean is_active;
-    time:Civil created_at;
-    time:Civil last_updated;
-    int? schedule_id;
+    string status?;
+    boolean is_active?;
+    time:Civil created_at?;
+    time:Civil last_updated?;
+    int? schedule_id?;
 |};
 
 # Schedule Type
