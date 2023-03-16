@@ -1,5 +1,6 @@
 import { createContext, useReducer, useEffect } from "react";
 import { getMainBooking } from "../helpers/HelperFunctions";
+import { loadBookings } from "../helpers/ApiCallFunctions";
 
 export const MainBookingContext = createContext();
 export const mainBookingReducer = (state, action) => {
@@ -13,14 +14,7 @@ export const mainBookingReducer = (state, action) => {
 };
 
 export const MainBookingContextProvider = ({ children }) => {
-  const [MainBooking, dispatchMainBooking] = useReducer(mainBookingReducer, null, () => {
-    const mainBooking = JSON.parse(localStorage.getItem("mainBooking"));
-    return mainBooking;
-  });
-
-  useEffect(() => {
-    localStorage.setItem("mainBooking", JSON.stringify(MainBooking));
-  }, [MainBooking]);
+  const [MainBooking, dispatchMainBooking] = useReducer(mainBookingReducer, getMainBooking(loadBookings()));
 
   return (
     <MainBookingContext.Provider value={{ mainBooking:MainBooking, dispatchMainBooking }}>

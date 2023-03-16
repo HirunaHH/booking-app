@@ -1,4 +1,5 @@
 import { createContext, useReducer, useEffect } from "react";
+import { loadBookings } from "../helpers/ApiCallFunctions";
 
 export const BookingListContext = createContext();
 export const bookingListReducer = (state, action) => {
@@ -28,14 +29,7 @@ export const bookingListReducer = (state, action) => {
 };
 
 export const BookingListContextProvider = ({ children }) => {
-  const [BookingList, dispatchBookingList] = useReducer(bookingListReducer, null, () => {
-    const bookingList = JSON.parse(localStorage.getItem("bookingList"));
-    return bookingList;
-  });
-
-  useEffect(() => {
-    localStorage.setItem("bookingList", JSON.stringify(BookingList));
-  }, [BookingList]);
+  const [BookingList, dispatchBookingList] = useReducer(bookingListReducer, loadBookings());
 
   return (
     <BookingListContext.Provider value={{ bookingList:BookingList, dispatchBookingList }}>

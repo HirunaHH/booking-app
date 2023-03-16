@@ -1,7 +1,15 @@
+// Copyright (c) 2023, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+//
+// This software is the property of WSO2 Inc. and its suppliers, if any.
+// Dissemination of any information or reproduction of any material contained
+// herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+// You may not alter or remove any copyright or other notice from copies of this content.
+
 import ballerina/sql;
 import wso2_office_booking.utils;
 
-# funtion to get the query to retrieve all bookings with a specific email
+# Query to retrieve all bookings with a specific email
+# 
 # + email - Email
 # + date - Date
 # + return - sql parameterized query
@@ -13,37 +21,39 @@ function getAllBookingsQuery(string email, string date) returns sql:Parameterize
         booking 
     WHERE
         email=${email}
-        AND is_active=true
+        AND active=true
         AND date>=${date}
     ORDER BY 
         date ASC
     `;
 }
 
-# function to get the query to retrieve the booking details with a specific email and booking_id
-# + booking_id - Bookind ID
+# Query to retrieve the booking details with a specific email and bookingId
+# 
+# + bookingId - Bookind ID
 # + return - sql parameterized query
-function getBookingByIdQuery(string booking_id) returns sql:ParameterizedQuery{
+function getBookingByIdQuery(string bookingId) returns sql:ParameterizedQuery{
     return `
     SELECT 
         *
     FROM
         booking
     WHERE
-        is_active=true
-        AND booking_id=${booking_id}
+        active=true
+        AND booking_id=${bookingId}
     LIMIT
         1
     `;
 }
 
-# function to get the query to retrieve the booking details with a specific email and date
+# Query to retrieve the booking details with a specific email and date
+# 
 # + email - Email
 # + date -  Date
-# + booking_id - Booking ID
+# + bookingId - Booking ID
 # + return - sql parameterized query
-function getBookingByDateQuery(string email, string date, string booking_id) returns sql:ParameterizedQuery{
-    if booking_id==="none"{
+function getBookingByDateQuery(string email, string date, string bookingId) returns sql:ParameterizedQuery{
+    if bookingId==="none"{
         return `
         SELECT 
             *
@@ -63,7 +73,7 @@ function getBookingByDateQuery(string email, string date, string booking_id) ret
             booking
         WHERE
             email=${email}
-            AND booking_id!=${booking_id}
+            AND booking_id!=${bookingId}
             AND date=${date}
         LIMIT
             1
@@ -71,33 +81,38 @@ function getBookingByDateQuery(string email, string date, string booking_id) ret
     }
 }
 
-# function to get the query to delete the booking with a specific email and booking_id
-# + booking_id - Bookind ID
+# Query to delete the booking with a specific email and bookingId
+# 
+# + bookingId - Bookind ID
+# + email - Email
 # + return - sql parameterized query
-function deleteBookingByIdQuery(string booking_id) returns sql:ParameterizedQuery{
+function deleteBookingByIdQuery(string bookingId, string email) returns sql:ParameterizedQuery{
     return `
-    DELETE 
+    DELETE
     FROM
         booking
     WHERE 
-        is_active=true
-        AND booking_id=${booking_id}
+        active=true
+        AND booking_id=${bookingId}
+        AND email=${email}
     `;
 }
 
-# function to get the query to delete the booking with a specific email and booking_id
+# Query to add a new booking
+# 
 # + booking - new booking
 # + return - sql parameterized query
 function addNewBookingQuery(Booking booking) returns sql:ParameterizedQuery{
     return `
     INSERT INTO 
         booking
-        (date, email, preferences, status, is_active, schedule_id)
-        VALUES (${utils:dateToDateString(booking.date)}, ${booking.email}, ${booking.preferences.toJsonString()}, 'Upcoming', true, ${booking?.schedule_id})
+        (date, email, preferences, status, active, schedule_id)
+        VALUES (${utils:dateToDateString(booking.date)}, ${booking.email}, ${booking.preferences.toJsonString()}, 'Upcoming', true, ${booking?.scheduleId})
     `;
 }
 
-# function to get the query to delete the booking with a specific email and booking_id
+# Query to delete the booking with a specific email and bookingId
+# 
 # + booking - booking
 # + return - sql parameterized query
 function editBookingQuery(Booking booking) returns sql:ParameterizedQuery{
@@ -105,25 +120,26 @@ function editBookingQuery(Booking booking) returns sql:ParameterizedQuery{
     UPDATE 
         booking
     SET 
-        date = ${utils:dateToDateString(booking.date)}, email = ${booking.email}, preferences = ${booking.preferences.toJsonString()}, status=${booking?.status}, is_active=${booking?.is_active}, schedule_id=${booking?.schedule_id===null?null:booking?.schedule_id.toString()}
+        date = ${utils:dateToDateString(booking.date)}, email = ${booking.email}, preferences = ${booking.preferences.toJsonString()}, status=${booking?.status}, active=${booking?.isActive}, schedule_id=${booking?.scheduleId===null?null:booking?.scheduleId.toString()}
     WHERE 
-        booking_id = ${booking.booking_id.toString()};
+        booking_id = ${booking.bookingId.toString()};
     `;
 }
 
-# function to get the query to delete the booking with a specific email and booking_id
+# Query to delete the booking with a specific email and booking_id
+# 
 # + date - Date
 # + return - sql parameterized query
 function getTodaysBookingsQuery(string date) returns sql:ParameterizedQuery{
     return `
     SELECT
-        booking_id, date, email, preferences, last_updated
+        booking_id, date, email, preferences, last_updated_at
     FROM
         booking
     WHERE
         date=${date}
-        AND is_active=true
-        AND status!="Booked"
+        AND active=true
+        AND status!=${utils:BOOKED}
     ORDER BY
         date DESC
     `;

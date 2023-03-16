@@ -1,3 +1,10 @@
+// Copyright (c) 2023, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+//
+// This software is the property of WSO2 Inc. and its suppliers, if any.
+// Dissemination of any information or reproduction of any material contained
+// herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+// You may not alter or remove any copyright or other notice from copies of this content.
+
 import ballerina/task;
 import ballerina/log;
 import wso2_office_booking.utils;
@@ -20,7 +27,7 @@ class Job{
         if spreadsheetClient is sheets:Client{
             self.spreadsheetClient = spreadsheetClient;
 
-            sheets:Spreadsheet|error spreadsheet = spreadsheetClient->openSpreadsheetByUrl(spreadsheetConfigData.spreadsheetURL);
+            sheets:Spreadsheet|error spreadsheet = spreadsheetClient->openSpreadsheetByUrl(spreadsheetConfigData.spreadsheetUrl);
 
             if (spreadsheet is sheets:Spreadsheet) {
                 self.spreadsheet = spreadsheet;
@@ -70,7 +77,7 @@ class Job{
     public function createConnector() returns sheets:Client|error{
         sheets:ConnectionConfig spreadsheetConfig = {
             auth: {
-                clientId: oAuthConfigData.clientID,
+                clientId: oAuthConfigData.clientId,
                 clientSecret: oAuthConfigData.clientSecret,
                 refreshUrl: sheets:REFRESH_URL,
                 refreshToken: oAuthConfigData.refreshToken
@@ -97,7 +104,7 @@ class Job{
         int i=0;
         bookings.forEach(function(database:Booking booking){
             json|error lunchPreference = booking.preferences.Lunch;
-            string[] tempArray = [utils:civilToGoogleTimestampString(booking.last_updated), booking.email, utils:dateToDateString(booking.date), lunchPreference is error?"":lunchPreference.toString()];
+            string[] tempArray = [utils:civilToGoogleTimestampString(booking.lastUpdatedAt), booking.email, utils:dateToDateString(booking.date), lunchPreference is error?"":lunchPreference.toString()];
             bookingDetails[i] = tempArray;
             i+=1;
         });

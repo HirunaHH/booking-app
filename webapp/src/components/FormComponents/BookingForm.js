@@ -16,14 +16,14 @@ const getOptions = ()=>{
 export default function BookingForm({mode}){
     const [date, setDate] = useState(new Date());
     const [preferences, setPreferences] = useState({});
-    const {logs, dispatchBookingList} = useBookingListContext()
+    const {bookingList, dispatchBookingList} = useBookingListContext()
     const{dispatchMainBooking} = useMainBookingContext()
     const {id} = useParams()
     const navigate = useNavigate()
 
     useEffect(()=>{
         if (mode==="edit"){
-            const booking = logs.filter((booking)=>booking.id===id)[0]
+            const booking = bookingList.filter((booking)=>booking.id===id)[0]
             console.log(booking)
             setDate(new Date(booking.date))
             setPreferences(booking.preferences)
@@ -33,9 +33,9 @@ export default function BookingForm({mode}){
     useEffect(()=>{
         dispatchMainBooking({
             type:"SET",
-            payload:logs
+            payload:bookingList
         })
-    },[logs])
+    },[bookingList])
 
 
     const handleChange = (event) => {
@@ -51,7 +51,7 @@ export default function BookingForm({mode}){
         if(mode=="add"){
             console.log({date,preferences})
         } else{
-            const booking = logs.filter((booking)=>booking.id===id)[0]
+            const booking = bookingList.filter((booking)=>booking.id===id)[0]
             dispatchBookingList({
                 type:"UPDATE",
                 payload:{
