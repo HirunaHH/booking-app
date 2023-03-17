@@ -23,3 +23,4 @@ public const TODAY_NOT_ALLOWED = "Not allowed for today";
 public const WEEKEND_DATE = "Weekend date";
 
 public const INTERNAL_ERROR = "Internal error occured";
+

@@ -23,7 +23,7 @@ public type DatabaseConfig record {
     int port;
 };
 
-# Booking Type
+# Booking database type
 # 
 # + bookingId - id of the booking  
 # + date - date which the booking is made 
@@ -51,7 +51,7 @@ public type Booking record {|
     int? scheduleId?;
 |};
 
-# Schedule Type
+# Schedule database type
 # 
 # + scheduleId - id of the schedule 
 # + email - email of the user who created the schedule  
@@ -60,6 +60,8 @@ public type Booking record {|
 # + isActive - flag to identify whether the schedule is active or not  
 # + isDeleted - flag to identify whether the schedule is deleted or not  
 # + preferences - json object with the meal preferences for all the days selected in thw schedule
+# + createdAt - date and time the shedule is created
+# + lastUpdatedAt - most recent date and time the schedule is updated 
 public type Schedule record {|
     @sql:Column {name: "schedule_id"}   
     int scheduleId?;
@@ -68,10 +70,33 @@ public type Schedule record {|
     string scheduleName;
     @sql:Column {name: "recurring_mode"}   
     string recurringMode;
-    @sql:Column {name: "is_active"}   
-    boolean isActive;
-    @sql:Column {name: "is_deleted"}   
-    boolean isDeleted;
+    @sql:Column {name: "active"}   
+    boolean isActive?;
+    @sql:Column {name: "deleted"}   
+    boolean isDeleted?;
     json preferences;
+    @sql:Column {name: "created_at"}   
+    time:Civil createdAt?;
+    @sql:Column {name: "last_updated_at"}      
+    time:Civil lastUpdatedAt?;
+|};
+
+# Schedule Data
+# 
+# + scheduleId - id of the schedule 
+# + email - email of the user who created the schedule  
+# + scheduleName - name of the schedule 
+# + recurringMode - recurring mode of the schedule  
+# + isActive - flag to identify whether the schedule is active or not  
+# + isDeleted - flag to identify whether the schedule is deleted or not  
+# + preferences - json object with the meal preferences for all the days selected in thw schedule
+public type ScheduleData record{|   
+    int scheduleId?;
+    string email?; 
+    string scheduleName?;   
+    string recurringMode?;
+    boolean isActive?;  
+    boolean isDeleted?;
+    json preferences?;  
 |};
 

@@ -12,106 +12,165 @@ import wso2_office_booking.database;
 import ballerinax/googleapis.sheets as sheets;
 import wso2_office_booking.types;
 
+// import ballerina/time;
+
+// configurable values
 configurable readonly & types:OAuthConfigData oAuthConfigData = ?;
 configurable readonly & types:SpreadsheetConfigDara spreadsheetConfigData = ?;
 
-class Job{
+class GoogleSheetHandler {
     *task:Job;
-    sheets:Client? spreadsheetClient=null;
-    sheets:Spreadsheet? spreadsheet=null;
-    sheets:Sheet? sheet=null;
+    sheets:Client spreadsheetClient;
+    sheets:Spreadsheet spreadsheet;
+    sheets:Sheet sheet;
 
-
-    public function init(){
-        sheets:Client|error spreadsheetClient = self.createConnector();
-        if spreadsheetClient is sheets:Client{
-            self.spreadsheetClient = spreadsheetClient;
-
-            sheets:Spreadsheet|error spreadsheet = spreadsheetClient->openSpreadsheetByUrl(spreadsheetConfigData.spreadsheetUrl);
-
-            if (spreadsheet is sheets:Spreadsheet) {
-                self.spreadsheet = spreadsheet;
-
-                sheets:Sheet|error sheet = spreadsheetClient->getSheetByName(spreadsheet.spreadsheetId,spreadsheetConfigData.sheetName);
-                if sheet is sheets:Sheet{
-                    self.sheet = sheet;
-                    log:printInfo("Connection to google sheet "+ spreadsheetConfigData.sheetName + " successfull");
-                }else{
-                    log:printError("Error retrieving sheet : " + spreadsheetConfigData.sheetName);
-                }
-            } else {
-                log:printError("Error retrieving spreadsheet");
-            }
-        } else{
-            log:printError("Error generating sheets client");
-        }
+    # init function 
+    #
+    # + spreadsheetClient - spreadsheetClient created from OAuth token values
+    # + spreadsheet - spreadsheet created by the given spreadsheet URL
+    # + sheet - sheet object created using given worksheet name
+    public function init(sheets:Client spreadsheetClient, sheets:Spreadsheet spreadsheet, sheets:Sheet sheet) {
+        self.spreadsheetClient = spreadsheetClient;
+        self.spreadsheet = spreadsheet;
+        self.sheet = sheet;
     }
 
-    public function execute(){
+    # Execute function inherited and overidden from the task:Job class
+    #
+    public function execute() {
         database:Booking[]|error bookingList = database:getTodaysBookings();
-        if bookingList is error{
+        if bookingList is error {
             log:printError("Could not retrieve booking details");
-        } else{
-            sheets:Client? spreadsheetClient = self.spreadsheetClient;
-            sheets:Spreadsheet? spreadsheet = self.spreadsheet;
-            sheets:Sheet? sheet = self.sheet;
+            return;
+        }
 
-            if(spreadsheet is sheets:Spreadsheet && sheet is sheets:Sheet && spreadsheetClient is sheets:Client){
+        if (self.clearSheet() is error) {
+            log:printError("Could not record bookings");
+            return;
+        }
 
-                error? writeResHeaders = self.writeToSheet(spreadsheetClient,spreadsheet,sheet,"A1:D1", [spreadsheetConfigData.tableHeaders]);
-                if writeResHeaders is (){
-                    string[][] bookingDetails = self.getBookingDetails(bookingList);
-                    error? writeResDetails=  self.writeToSheet(spreadsheetClient, spreadsheet, sheet, self.getRange(bookingDetails.length()), bookingDetails);
-                    if writeResDetails is (){
-                        log:printInfo("Bookings successfully recorded to the google sheet");
-                    }else{
-                        log:printError("Could not record bookings");
-                    }
-                }else{
-                    log:printError("Could not record bookings");
-                }
+        error? writeResHeaders = self.writeToSheet(self.getRange(1, spreadsheetConfigData.tableHeaders.length(), "A1"), [spreadsheetConfigData.tableHeaders]);
+        if writeResHeaders is () {
+            string[][] bookingDetails = self.getBookingDetails(bookingList);
+            error? writeResDetails = self.writeToSheet(self.getRange(bookingDetails.length(), spreadsheetConfigData.tableHeaders.length(), "A2"), bookingDetails);
+            if writeResDetails is () {
+                log:printInfo("Bookings successfully recorded to the google sheet");
+                return;
             }
         }
+        log:printError("Could not record bookings");
     }
 
-    public function createConnector() returns sheets:Client|error{
-        sheets:ConnectionConfig spreadsheetConfig = {
-            auth: {
-                clientId: oAuthConfigData.clientId,
-                clientSecret: oAuthConfigData.clientSecret,
-                refreshUrl: sheets:REFRESH_URL,
-                refreshToken: oAuthConfigData.refreshToken
-            }
-        };
-
-        sheets:Client spreadsheetClient = check new (spreadsheetConfig);
-        return spreadsheetClient;
-    }
-
-
-    public function writeToSheet(sheets:Client spreadsheetClient, sheets:Spreadsheet spreadsheet, sheets:Sheet sheet, string rangeStr, string[][] values) returns error?{
+    # Write given values to the worksheet in the given range
+    #
+    # + rangeStr - range
+    # + values - 2D string array with values to be written
+    # + return - error or ()
+    public function writeToSheet(string rangeStr, string[][] values) returns error? {
         sheets:Range range = {a1Notation: rangeStr, values: values};
-        error? spreadsheetRes = spreadsheetClient->setRange(spreadsheet.spreadsheetId, sheet.properties.title, range);
+        error? spreadsheetRes = self.spreadsheetClient->setRange(self.spreadsheet.spreadsheetId, self.sheet.properties.title, range);
         return spreadsheetRes;
     }
 
-    public function getRange(int rows) returns string{
-        return "A2:D" + (rows+1).toString();
+    # Clear the sheet
+    #
+    # + return - error or ()
+    public function clearSheet() returns error? {
+        error? clearAllResult = check self.spreadsheetClient->clearAllBySheetName(self.spreadsheet.spreadsheetId, spreadsheetConfigData.sheetName);
+        return clearAllResult;
     }
 
-    public function getBookingDetails(database:Booking[] bookings) returns string[][]{
+    # Get range in the google sheet which can accomodate the given no of rows and columns, starting from the given cell
+    #
+    # + rows - no of rows
+    # + columns - no of columns
+    # + startingCell - starting cell of the range
+    # + return - range string
+    public function getRange(int rows, int columns, string startingCell) returns string {
+        string|error endingColumn = string:fromCodePointInt(startingCell[0].toCodePointInt() + columns - 1);
+        if endingColumn is error {
+            return "";
+        }
+
+        int|error startingRow = (int:fromString(startingCell.substring(1)));
+        if startingRow is error {
+            return "";
+        }
+        int endingRow = startingRow + rows - 1;
+        return startingCell + ":" + endingColumn + endingRow.toString();
+    }
+
+    # Get an array with consisting of only details of the bookings that are needed to be written to the google sheet
+    #
+    # + bookings - array of Booking objects 
+    # + return - 2D string array consisting of required details of the bookings
+    public function getBookingDetails(database:Booking[] bookings) returns string[][] {
         string[][] bookingDetails = [];
-        int i=0;
-        bookings.forEach(function(database:Booking booking){
+        int i = 0;
+        bookings.forEach(function(database:Booking booking) {
             json|error lunchPreference = booking.preferences.Lunch;
-            string[] tempArray = [utils:civilToGoogleTimestampString(booking.lastUpdatedAt), booking.email, utils:dateToDateString(booking.date), lunchPreference is error?"":lunchPreference.toString()];
+            string[] tempArray = [utils:civilToGoogleTimestampString(booking.lastUpdatedAt), booking.email, utils:dateToDateString(booking.date), lunchPreference is error ? "" : lunchPreference.toString()];
             bookingDetails[i] = tempArray;
-            i+=1;
+            i += 1;
         });
         return bookingDetails;
     }
 
 }
-public function main() returns error?{
-    task:JobId _ = check task:scheduleJobRecurByFrequency(new Job(), 30);
+
+# Create the google sheet api connector using the given configurable values
+#
+# + return - Return Value Description
+public function createConnector() returns sheets:Client? {
+    sheets:ConnectionConfig spreadsheetConfig = {
+        auth: {
+            clientId: oAuthConfigData.clientId,
+            clientSecret: oAuthConfigData.clientSecret,
+            refreshUrl: sheets:REFRESH_URL,
+            refreshToken: oAuthConfigData.refreshToken
+        }
+    };
+
+    sheets:Client|error spreadsheetClient = new (spreadsheetConfig);
+    if spreadsheetClient is error {
+        return ();
+    }
+    return spreadsheetClient;
+}
+
+public function main() {
+
+    sheets:Client? spreadsheetClient = createConnector();
+    if spreadsheetClient is () {
+        log:printError("Error generating sheets client");
+        return;
+    }
+
+    sheets:Spreadsheet|error spreadsheet = spreadsheetClient->openSpreadsheetByUrl(spreadsheetConfigData.spreadsheetUrl);
+    if spreadsheet is error {
+        log:printError("Error retrieving spreadsheet");
+        return;
+    }
+
+    sheets:Sheet|error sheet = spreadsheetClient->getSheetByName(spreadsheet.spreadsheetId, spreadsheetConfigData.sheetName);
+    if sheet is error {
+        log:printError("Error retrieving sheet : " + spreadsheetConfigData.sheetName);
+        return;
+    }
+    log:printInfo("Connection to google sheet " + spreadsheetConfigData.sheetName + " successfull");
+
+    // time:Civil startTime = time:utcToCivil(time:utcNow());
+    // if startTime.hour >= utils:ADD_BOOKING_CUTOFF_HOUR{
+    //     startTime = time:utcToCivil(time:utcAddSeconds(time:utcNow(), 86400));
+    // }
+
+    // startTime.hour = utils:ADD_BOOKING_CUTOFF_HOUR;
+    // startTime.minute = 0;
+    // startTime.second = 0; 
+
+    // task:JobId|error jobId = task:scheduleJobRecurByFrequency(new GoogleSheetHandler(spreadsheetClient, spreadsheet, sheet), 86400, -1, startTime);
+    task:JobId|error jobId = task:scheduleJobRecurByFrequency(new GoogleSheetHandler(spreadsheetClient, spreadsheet, sheet), 300);
+    if jobId is error {
+        log:printError(jobId.message());
+    }
 }

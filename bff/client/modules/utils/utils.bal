@@ -5,29 +5,10 @@
 // herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 // You may not alter or remove any copyright or other notice from copies of this content.
 
+import ballerina/io;
 import ballerina/time;
 
 // Date & Time Helper Functions
-
-# Get today or tommorow date according to the hour of the day
-# 
-# + hourCheckValue - hour of the day that the check should be performe
-# + return - object with the date and it's type:whether it's today or tommorow
-public function getTodayOrTommorow(int hourCheckValue) returns record {|time:Civil date; string DayType;|}{
-    time:Civil today = time:utcToCivil(time:utcNow());
-    time:Civil tommorow = time:utcToCivil(time:utcAddSeconds(time:utcNow(),86400));
-    if(today.hour<hourCheckValue){
-        return {
-            date:today,
-            DayType: "Today"
-        };
-    }else{
-        return {
-            date:tommorow,
-            DayType: "Tommorow"
-        };
-    }
-}
 
 # Convert a Date type variable to string with the format of "YYYY-MM-DD"
 # 
@@ -104,12 +85,20 @@ public function compareDates(time:Civil d1, string comparison, time:Civil d2) re
         minutes: 0,
         seconds: 0
     };
-    
+
+    d1.hour = 0;
+    d1.minute = 0;
+    d1.second = 0;
+
+    d2.hour = 0;
+    d2.minute = 0;
+    d2.second = 0;
+
     time:Utc utc1 = check time:utcFromCivil(d1);
     time:Utc utc2 = check time:utcFromCivil(d2);
     match comparison{
         ">="=>{
-            if <int>time:utcDiffSeconds(utc1, utc2)>0{
+            if <int>time:utcDiffSeconds(utc1, utc2)>=0{
                 return true;
             }else{
                 return false;
@@ -131,6 +120,7 @@ public function compareDates(time:Civil d1, string comparison, time:Civil d2) re
             }
         }
         ">"=>{
+            io:println(<int>time:utcDiffSeconds(utc1,utc2));
             if <int>time:utcDiffSeconds(utc1, utc2)>0{
                 return true;
             }else{
@@ -181,7 +171,7 @@ public function checkBookingDateValidity(time:Date date) returns string{
         return TODAY_NOT_ALLOWED;
     }
 
-    boolean|error isFutureDate = compareDates(newDate, ">", tommorow);
+    boolean|error isFutureDate = compareDates(newDate, ">=", tommorow);
     if isFutureDate is error{
         return INTERNAL_ERROR;
     }

@@ -106,8 +106,8 @@ function addNewBookingQuery(Booking booking) returns sql:ParameterizedQuery{
     return `
     INSERT INTO 
         booking
-        (date, email, preferences, status, active, schedule_id)
-        VALUES (${utils:dateToDateString(booking.date)}, ${booking.email}, ${booking.preferences.toJsonString()}, 'Upcoming', true, ${booking?.scheduleId})
+        (date, email, preferences, schedule_id)
+        VALUES (${utils:dateToDateString(booking.date)}, ${booking.email}, ${booking.preferences.toJsonString()}, ${booking?.scheduleId.toString()})
     `;
 }
 
@@ -115,7 +115,7 @@ function addNewBookingQuery(Booking booking) returns sql:ParameterizedQuery{
 # 
 # + booking - booking
 # + return - sql parameterized query
-function editBookingQuery(Booking booking) returns sql:ParameterizedQuery{
+function updateBookingQuery(Booking booking) returns sql:ParameterizedQuery{
     return `
     UPDATE 
         booking
@@ -142,5 +142,125 @@ function getTodaysBookingsQuery(string date) returns sql:ParameterizedQuery{
         AND status!=${utils:BOOKED}
     ORDER BY
         date DESC
+    `;
+}
+
+# Query tp get all the schedules under the given user email
+#
+# + email - Email
+# + return - sql parameterizer query
+public function getAllSchedulesQuery(string email) returns sql:ParameterizedQuery{
+    return `
+    SELECT 
+        *  
+    FROM 
+        schedule 
+    WHERE 
+        email=${email} 
+        AND deleted=false 
+    ORDER BY 
+        active DESC
+    `;
+}
+
+# Query to retrieve the schedule details with a specific email and bookingId
+# 
+# + scheduleId - Schedule ID
+# + return - sql parameterized query
+function getScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery{
+    return `
+    SELECT 
+        *
+    FROM
+        schedule
+    WHERE
+        deleted=false
+        AND schedule_id=${scheduleId}
+    LIMIT
+        1
+    `;
+}
+
+# Query to retrieve the schedule details with a specific email and schedule_name
+# 
+# + scheduleName - Schedule name
+# + email - email
+# + scheduleId - schedule ID
+# + return - sql parameterized query
+function getScheduleByNameQuery(string scheduleName, string email, string scheduleId = "none") returns sql:ParameterizedQuery{
+    if scheduleId=="none"{
+        return `
+        SELECT 
+            *
+        FROM
+            schedule
+        WHERE
+            deleted=false
+            AND schedule_name=${scheduleName}
+            AND email=${email}
+        LIMIT
+            1
+        `;
+    }else{
+        return `
+        SELECT 
+            *
+        FROM
+            schedule
+        WHERE
+            deleted=false
+            AND schedule_name=${scheduleName}
+            AND email=${email}
+            AND schedule_id!=${scheduleId}
+        LIMIT
+            1
+        `;
+    }
+}
+
+function getScheduleCountQuery(string email) returns sql:ParameterizedQuery{
+    return `
+    SELECT
+        COUNT(*) as count
+    FROM 
+        schedule
+    WHERE 
+        deleted=false
+        AND email=${email}  
+    `;
+}
+
+function addNewScheduleQuery(Schedule schedule) returns sql:ParameterizedQuery{
+    return `
+    INSERT INTO 
+        schedule
+        (email, schedule_name, recurring_mode, preferences)
+        VALUES (${schedule.email}, ${schedule.scheduleName}, ${schedule.recurringMode}, ${schedule.preferences.toJsonString()})
+    `;
+}
+
+function deleteScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery{
+    return `
+    UPDATE
+        schedule
+    SET
+        deleted = true
+    WHERE
+        schedule_id=${scheduleId}
+    `;
+}
+
+# Query to update a schedule
+# 
+# + schedule - detaisl of the schedule to be updated
+# + return - sql parameterized query
+function updateScheduleQuery(Schedule schedule) returns sql:ParameterizedQuery{
+    return `
+    UPDATE 
+        schedule
+    SET 
+        schedule_name = ${schedule.scheduleName}, recurring_mode = ${schedule.recurringMode}, active=${schedule.isActive}, preferences = ${schedule.preferences.toJsonString()}
+    WHERE 
+        schedule_id = ${schedule.scheduleId};
     `;
 }
