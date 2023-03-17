@@ -34,7 +34,7 @@ public type SpreadsheetConfigDara record {|
 # Error with a message
 # 
 # + message - error message
-public type OfficeBookingAppError record {|
+public type AppError record {|
     string message;
 |};
 
@@ -52,23 +52,23 @@ public type DbOperationSuccessResult record {|
 # 404 Not Found response 
 # 
 # + body - error message
-public type OfficeBookingAppNotFoundError record {|
+public type AppNotFoundError record {|
     *http:NotFound;
-    OfficeBookingAppError body;
+    AppError body;
 |};
 
 # 500 Internal Server Error response 
 # 
 # + body - error message
-public type OfficeBookingAppServerError record {|
+public type AppServerError record {|
     *http:InternalServerError;
-    OfficeBookingAppError body;
+    AppError body;
 |};
 
 # 200 OK response 
 # 
 # + body - payload with success details
-public type OfficeBookingAppSuccess record {|
+public type AppSuccess record {|
     *http:Ok;
     DbOperationSuccessResult body;
 |};
@@ -76,8 +76,8 @@ public type OfficeBookingAppSuccess record {|
 # 400 Bad Request Error response
 # 
 # + body - error message
-public type OfficeBookingAppBadRequestError record{|
+public type AppBadRequestError record{|
     *http:BadRequest;
-    OfficeBookingAppError body;
+    AppError body;
 |};
  

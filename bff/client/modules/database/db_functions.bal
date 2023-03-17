@@ -10,7 +10,6 @@ import ballerinax/mysql.driver as _;
 import ballerina/sql;
 import ballerina/time;
 import wso2_office_booking.types;
-import ballerina/io;
 import wso2_office_booking.utils;
 
 configurable readonly & DatabaseConfig databaseConfig = ?;
@@ -44,7 +43,6 @@ public function getAllBookings(string email, time:Civil startingDate) returns Bo
 # + return - Booking with the given ID or error record
 public function getBookingById(string bookingId) returns Booking|error? {
     Booking|error result = dbClient->queryRow(getBookingByIdQuery(bookingId));
-    io:println(result);
     if result is sql:NoRowsError{
         return ();
     }

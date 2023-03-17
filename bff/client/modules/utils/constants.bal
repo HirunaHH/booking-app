@@ -16,11 +16,25 @@ public const ADD_BOOKING_CUTOFF_HOUR = 9;
 public const SHOW_BOOKINGS_CUTOFF_HOUR = 15;
 
 // Date validate strings
-public const DATE_OK = "Date is okay";
-public const PREVIOUS_DATE = "Previous date";
-public const INVALID_DATE = "Invalid date";
-public const TODAY_NOT_ALLOWED = "Not allowed for today";
-public const WEEKEND_DATE = "Weekend date";
+public enum DateValidateErrorMessages{
+    PREVIOUS_DATE = "Cannot add a booking for a previous date",
+    INVALID_DATE = "Invalid date",
+    TODAY_NOT_ALLOWED = "A booking cannot be made for today at this time",
+    WEEKEND_DATE = "Cannot add bookings for weekends"
+}
 
 public const INTERNAL_ERROR = "Internal error occured";
+
+public enum DefaultErrorMessages{
+    ID_NOT_FOUND="Cannot find ID",
+    CANNOT_RETRIEVE_FROM_DB="Could not retrieve details from the database",
+    CANNOT_ADD_ENTRY="Could not add new entry",
+    CANNOT_EDIT_ENTRY="Could not edit the entry",
+    CANNOT_DELETE_ENTRY="Could not delete the entry",
+    NAME_ALREADY_EXISTS="An entry exists for the given name",
+    DATE_ALREADY_EXISTS="An entry exists for the given date",
+    CANNOT_EDIT_ACTIVE_SCHEDULE="Cannot edit an active schedule. Please deactivate before editing",
+    CANNOT_EDIT_CONFIRMED_BOOKING="Cannot edit an already confirmed booking",
+    NOT_MORE_THAN_3_SCHEDULES="Cannot save more than 3 schedules at a time. Try deleting a schedule before adding new one"
+}
 
