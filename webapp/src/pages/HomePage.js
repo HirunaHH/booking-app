@@ -5,10 +5,14 @@ import { useBookingListContext } from "../hooks/useBookingListContext";
 import {loadBookings} from "../helpers/ApiCallFunctions"
 import { useEffect } from "react";
 import { useMainBookingContext } from "../hooks/useMainBookingContext";
+import {getToken, showAlert, showConfirmAlert, scanQRCode, saveLocalData, getLocalData} from './../microapp-bridge';
 
 
 export default function Home(){
 
+    getToken((token) => {
+        console.log("token: ------>>" + token);
+      });
     const {bookingList, dispatchBookingList} = useBookingListContext()
     const {dispatchMainBooking} = useMainBookingContext()
     useEffect(()=>{

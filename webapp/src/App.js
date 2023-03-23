@@ -8,20 +8,11 @@ import SchedulePage from './pages/SchedulePage';
 import BottomNav from './components/navigation/BottomNav';
 import { BookingListContextProvider } from './context/BookingListContext';
 import { MainBookingContextProvider } from './context/MainBookingContext';
-const nativebridge = require('@nrk/nativebridge')
+
 
 function App() {
-  nativebridge.rpc({                          
-    topic: 'token', 
-    data: {},
-    resolve: (data) => {
-      console.log("resolved " + data.data);
-    },
-    reject: (err) => {
-      console.log("rejected" + err);
-    },
-    timeout: 1000
-  })
+
+  // showConfirmAlert("Hi", "Hi", "confirm", "cancel",()=>{},()=>{},()=>{});
   return (
     <BrowserRouter>
       <BookingListContextProvider>
