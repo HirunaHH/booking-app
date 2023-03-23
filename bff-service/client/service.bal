@@ -11,7 +11,7 @@ import wso2_office_booking_service.types;
 import ballerina/sql;
 import wso2_office_booking_service.utils;
 import ballerina/time;
-import ballerina/io;
+// import ballerina/io;
 
 @http:ServiceConfig {
     cors: {
@@ -29,12 +29,12 @@ service / on new http:Listener(9090) {
     #
     # + email - User email
     # + return - Array of bookings or error response
-    resource function get bookings(string email) returns database:Booking[]|types:AppServerError {
+    resource function get bookings(string email) returns types:Booking[]|types:AppServerError {
         time:Civil startingDate = time:utcToCivil(time:utcNow());
         if startingDate.hour > utils:SHOW_BOOKINGS_CUTOFF_HOUR {
             startingDate = time:utcToCivil(time:utcAddSeconds(time:utcNow(), 86400));
         }
-        database:Booking[]|error result = database:getAllBookings(email, startingDate);
+        types:Booking[]|error result = database:getAllBookings(email, startingDate);
         if result is error {
             return {
                 body: {message: utils:CANNOT_RETRIEVE_FROM_DB}
@@ -46,8 +46,8 @@ service / on new http:Listener(9090) {
     # Get the booking of specific Id
     #
     # + return - Booking record or error responses
-    resource function get bookings/[string bookingId]() returns database:Booking|types:AppServerError|types:AppNotFoundError {
-        database:Booking|error? result = database:getBookingById(bookingId);
+    resource function get bookings/[string bookingId]() returns types:Booking|types:AppServerError|types:AppNotFoundError {
+        types:Booking|error? result = database:getBookingById(bookingId);
         if result is () {
             return <types:AppNotFoundError>{
                 body: {
@@ -88,7 +88,7 @@ service / on new http:Listener(9090) {
     #
     # + booking - new booking to add
     # + return - operation confirmation details or error responses
-    resource function post bookings(@http:Payload database:Booking booking) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
+    resource function post bookings(@http:Payload types:Booking booking) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
 
         time:Civil|error newDate = utils:dateToCivil(booking.date);
         time:Civil today = time:utcToCivil(time:utcNow());
@@ -133,8 +133,8 @@ service / on new http:Listener(9090) {
             };
         }
 
-        database:Booking|error? dateMatchedResult = database:getBookingByDate(booking.email, utils:dateToDateString(booking.date));
-        if dateMatchedResult is database:Booking {
+        types:Booking|error? dateMatchedResult = database:getBookingByDate(booking.email, utils:dateToDateString(booking.date));
+        if dateMatchedResult is types:Booking {
             return <types:AppBadRequestError>{
                 body: {message: utils:DATE_ALREADY_EXISTS}
             };
@@ -160,7 +160,7 @@ service / on new http:Listener(9090) {
     #
     # + booking - booking to be updated
     # + return - operation confirmation details or error responses
-    resource function patch bookings/[string bookingId](@http:Payload database:Booking booking) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
+    resource function patch bookings/[string bookingId](@http:Payload types:Booking booking) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
 
         time:Civil|error newDate = utils:dateToCivil(booking.date);
         time:Civil today = time:utcToCivil(time:utcNow());
@@ -206,7 +206,7 @@ service / on new http:Listener(9090) {
             };
         }
 
-        database:Booking|error? existingResult = database:getBookingById(bookingId);
+        types:Booking|error? existingResult = database:getBookingById(bookingId);
         if existingResult is () {
             return <types:AppBadRequestError>{
                 body: {message: utils:ID_NOT_FOUND}
@@ -223,8 +223,8 @@ service / on new http:Listener(9090) {
             };
         }
 
-        database:Booking|error? dateMatchedResult = database:getBookingByDate(booking.email, utils:dateToDateString(booking.date), booking.bookingId.toString());
-        if dateMatchedResult is database:Booking {
+        types:Booking|error? dateMatchedResult = database:getBookingByDate(booking.email, utils:dateToDateString(booking.date), booking.bookingId.toString());
+        if dateMatchedResult is types:Booking {
             return <types:AppBadRequestError>{
                 body: {message: utils:DATE_ALREADY_EXISTS}
             };
@@ -250,8 +250,8 @@ service / on new http:Listener(9090) {
     #
     # + email - User email
     # + return - Array of schedules or error response 
-    resource function get schedules(string email) returns database:Schedule[]|types:AppServerError {
-        database:Schedule[]|error result = database:getAllSchedules(email);
+    resource function get schedules(string email) returns types:Schedule[]|types:AppServerError {
+        types:Schedule[]|error result = database:getAllSchedules(email);
         if result is error {
             return {
                 body: {message: utils:CANNOT_RETRIEVE_FROM_DB}
@@ -264,8 +264,8 @@ service / on new http:Listener(9090) {
     #
     # + email - User email
     # + return - Array of schedules or error response
-    resource function get schedules/[string scheduleId](string email) returns database:Schedule|types:AppServerError|types:AppNotFoundError? {
-        database:Schedule|error? result = database:getScheduleById(scheduleId);
+    resource function get schedules/[string scheduleId](string email) returns types:Schedule|types:AppServerError|types:AppNotFoundError? {
+        types:Schedule|error? result = database:getScheduleById(scheduleId);
         if result is () {
             return <types:AppNotFoundError>{
                 body: {
@@ -306,7 +306,7 @@ service / on new http:Listener(9090) {
     #
     # + schedule - new schedule to add
     # + return - operation confirmation details or error responses
-    resource function post schedules(@http:Payload database:Schedule schedule) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
+    resource function post schedules(@http:Payload types:Schedule schedule) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
 
         int|error scheduleCount = database:getSchedulesCount(schedule.email);
         if scheduleCount is error {
@@ -321,8 +321,8 @@ service / on new http:Listener(9090) {
             };
         }
 
-        database:Schedule|error? nameMatchedResult = database:getScheduleByName(schedule.scheduleName, schedule.email, "none");
-        if nameMatchedResult is database:Schedule {
+        types:Schedule|error? nameMatchedResult = database:getScheduleByName(schedule.scheduleName, schedule.email, "none");
+        if nameMatchedResult is types:Schedule {
             return <types:AppBadRequestError>{
                 body: {message: utils:NAME_ALREADY_EXISTS}
             };
@@ -356,9 +356,9 @@ service / on new http:Listener(9090) {
     #
     # + schedule - schedule to be updated
     # + return - operation confirmation details or error responses
-    resource function patch schedules/[string scheduleId](@http:Payload database:Schedule schedule) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError? {
+    resource function patch schedules/[string scheduleId](@http:Payload types:Schedule schedule) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError? {
 
-        database:Schedule|error? existingResult = database:getScheduleById(scheduleId);
+        types:Schedule|error? existingResult = database:getScheduleById(scheduleId);
         if existingResult is () {
             return <types:AppBadRequestError>{
                 body: {message: utils:ID_NOT_FOUND}
@@ -375,8 +375,8 @@ service / on new http:Listener(9090) {
             };
         }
 
-        database:Schedule|error? nameMatchedResult = database:getScheduleByName(schedule.scheduleName, schedule.email, scheduleId.toString());
-        if nameMatchedResult is database:Schedule {
+        types:Schedule|error? nameMatchedResult = database:getScheduleByName(schedule.scheduleName, schedule.email, scheduleId.toString());
+        if nameMatchedResult is types:Schedule {
             return <types:AppBadRequestError>{
                 body: {message: utils:NAME_ALREADY_EXISTS}
             };
@@ -399,7 +399,21 @@ service / on new http:Listener(9090) {
     }
 
     resource function post activate\-schedule(string scheduleId, string email) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
-        database:Schedule|error? schedule = database:getScheduleById(scheduleId);
+
+        types:Schedule|error? activeSchedule = database:getActiveSchedule(email);
+        if activeSchedule is error{
+            return <types:AppServerError>{
+                body: {message: utils:INTERNAL_ERROR}
+            };
+        }
+
+        if activeSchedule is types:Schedule{
+             return <types:AppBadRequestError>{
+                body: {message: utils:ACTIVE_SCHEDULE_EXIST}
+            };           
+        }
+
+        types:Schedule|error? schedule = database:getScheduleById(scheduleId);
         if schedule is error {
             return <types:AppServerError>{
                 body: {message: utils:INTERNAL_ERROR}
@@ -412,15 +426,9 @@ service / on new http:Listener(9090) {
             };
         }
 
-        boolean? isActive = schedule.isActive;
-        if isActive is (){
-            return <types:AppServerError>{
-                body: {message: utils:INTERNAL_ERROR}
-            };
-        } 
-        if isActive{
+        if schedule.isActive === true{
             return <types:AppBadRequestError>{
-                body: {message: utils:SCHEDULE_ALREADY_ACTIVE}
+                body: {message: utils:SCHEDULE_ACTIVE}
             };
         }
 
@@ -432,8 +440,8 @@ service / on new http:Listener(9090) {
                 body: {message: utils:INTERNAL_ERROR}
             };
         }
+        types:Booking[] bookings = utils:getBookingListBySchedule(weeklyPreferences, recurringWeeks, email, <int>schedule.scheduleId);
 
-        database:Booking[] bookings = utils:getBookingListBySchedule(weeklyPreferences, recurringWeeks);
         types:DbOperationSuccessResult|error result = database:activateSchedule(scheduleId, email, bookings);
         if result is error{
             return <types:AppServerError>{
@@ -443,9 +451,37 @@ service / on new http:Listener(9090) {
         return <types:AppSuccess>{
             body:result
         };
-
     }
 
-    resource function post deactivate\-schedule() {
+    resource function post deactivate\-schedule (string scheduleId, string email) returns types:AppSuccess|types:AppBadRequestError|types:AppServerError {
+
+        types:Schedule|error? schedule = database:getScheduleById(scheduleId);
+        if schedule is error {
+            return <types:AppServerError>{
+                body: {message: utils:INTERNAL_ERROR}
+            };
+        }
+
+        if schedule is () {
+            return <types:AppBadRequestError>{
+                body: {message: utils:ID_NOT_FOUND}
+            };
+        }
+
+        if schedule.isActive === false{
+            return <types:AppBadRequestError>{
+                body: {message: utils:SCHEDULE_NOT_ACTIVE}
+            };
+        }
+
+        types:DbOperationSuccessResult|error result = database:deactivateSchedule(scheduleId, email);
+        if result is error{
+            return <types:AppServerError>{
+                body:{message:result.message()}
+            };
+        }    
+        return <types:AppSuccess>{
+            body:result
+        };
     }
 }

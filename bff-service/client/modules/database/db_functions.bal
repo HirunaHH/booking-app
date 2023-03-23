@@ -10,7 +10,6 @@ import ballerinax/mysql.driver as _;
 import ballerina/sql;
 import ballerina/time;
 import wso2_office_booking_service.types;
-import ballerina/io;
 import wso2_office_booking_service.utils;
 
 configurable readonly & DatabaseConfig databaseConfig = ?;
@@ -25,11 +24,11 @@ final mysql:Client dbClient = check new (
 # + email - Email
 # + startingDate - date from which onwards the booking will be shown
 # + return - Return an array of all the bookings
-public function getAllBookings(string email, time:Civil startingDate) returns Booking[]|error {
-    Booking[] bookings = [];
-    stream<Booking, error?> resultStream = dbClient->query(getAllBookingsQuery(email, utils:dateToDateString(startingDate)));
+public function getAllBookings(string email, time:Civil startingDate) returns types:Booking[]|error {
+    types:Booking[] bookings = [];
+    stream<types:Booking, error?> resultStream = dbClient->query(getAllBookingsQuery(email, utils:dateToDateString(startingDate)));
 
-    _ = check resultStream.forEach(function(Booking booking) {
+    _ = check resultStream.forEach(function(types:Booking booking) {
         bookings.push(booking);
     });
 
@@ -42,8 +41,8 @@ public function getAllBookings(string email, time:Civil startingDate) returns Bo
 # 
 # + bookingId - Booking ID
 # + return - Booking with the given ID or error record
-public function getBookingById(string bookingId) returns Booking|error? {
-    Booking|error result = dbClient->queryRow(getBookingByIdQuery(bookingId));
+public function getBookingById(string bookingId) returns types:Booking|error? {
+    types:Booking|error result = dbClient->queryRow(getBookingByIdQuery(bookingId));
     if result is sql:NoRowsError{
         return ();
     }
@@ -56,9 +55,9 @@ public function getBookingById(string bookingId) returns Booking|error? {
 # + date - Date
 # + bookingId - Booking ID
 # + return - Booking with the given ID or error record
-public function getBookingByDate(string email, string date, string bookingId = "none") returns Booking|error? {
-    stream<Booking, error?> resultStream = dbClient->query(getBookingByDateQuery(email, date, bookingId));
-    Booking[] result = check from var booking in resultStream
+public function getBookingByDate(string email, string date, string bookingId = "none") returns types:Booking|error? {
+    stream<types:Booking, error?> resultStream = dbClient->query(getBookingByDateQuery(email, date, bookingId));
+    types:Booking[] result = check from var booking in resultStream
         select booking;
     if result.length() > 0 {
         return result[0];
@@ -70,12 +69,12 @@ public function getBookingByDate(string email, string date, string bookingId = "
 # Get the active booking list on current date
 # 
 # + return - active booking list with the date matching to current date or error
-public function getTodaysBookings() returns Booking[]|error {
+public function getTodaysBookings() returns types:Booking[]|error {
     time:Civil today = time:utcToCivil(time:utcNow());
     string date = utils:dateToDateString(today);
-    Booking[] bookings = [];
-    stream<Booking, error?> resultStream = dbClient->query(getTodaysBookingsQuery(date));
-    _ = check resultStream.forEach(function(Booking booking) {
+    types:Booking[] bookings = [];
+    stream<types:Booking, error?> resultStream = dbClient->query(getTodaysBookingsQuery(date));
+    _ = check resultStream.forEach(function(types:Booking booking) {
         bookings.push(booking);
     });
 
@@ -102,7 +101,7 @@ public function deleteBookingById(string bookingId, string email) returns types:
 # 
 # + booking - The new booking
 # + return - Success result 
-public function addNewBooking(Booking booking) returns types:DbOperationSuccessResult|error {
+public function addNewBooking(types:Booking booking) returns types:DbOperationSuccessResult|error {
     sql:ExecutionResult result = check dbClient->execute(addNewBookingQuery(booking));
     return result.cloneWithType(types:DbOperationSuccessResult);
 }
@@ -112,7 +111,7 @@ public function addNewBooking(Booking booking) returns types:DbOperationSuccessR
 # + existingBooking - Already present booking 
 # + newBookingDetails - New Details to be updated
 # + return - Success result or error
-public function updateBooking(Booking existingBooking,Booking newBookingDetails) returns types:DbOperationSuccessResult|error {
+public function updateBooking(types:Booking existingBooking,types:Booking newBookingDetails) returns types:DbOperationSuccessResult|error {
     newBookingDetails.keys().forEach(function(string key) {
         existingBooking[key] = newBookingDetails[key];
     });
@@ -125,10 +124,10 @@ public function updateBooking(Booking existingBooking,Booking newBookingDetails)
 #
 # + email - User email
 # + return - Array of schedules or error
-public function getAllSchedules(string email) returns Schedule[]|error{
-    Schedule[] schedules = [];
-    stream<Schedule,error?> resultStream = dbClient->query(getAllSchedulesQuery(email));
-    _ = check resultStream.forEach(function(Schedule schedule){
+public function getAllSchedules(string email) returns types:Schedule[]|error{
+    types:Schedule[] schedules = [];
+    stream<types:Schedule,error?> resultStream = dbClient->query(getAllSchedulesQuery(email));
+    _ = check resultStream.forEach(function(types:Schedule schedule){
         schedules.push(schedule);
     });
 
@@ -140,8 +139,8 @@ public function getAllSchedules(string email) returns Schedule[]|error{
 # 
 # + scheduleId - Schedule ID
 # + return - Schedule with the given ID or error record
-public function getScheduleById(string scheduleId) returns Schedule|error? {
-    Schedule|error result = dbClient->queryRow(getScheduleByIdQuery(scheduleId));
+public function getScheduleById(string scheduleId) returns types:Schedule|error? {
+    types:Schedule|error result = dbClient->queryRow(getScheduleByIdQuery(scheduleId));
     if result is sql:NoRowsError{
         return ();
     }
@@ -154,13 +153,26 @@ public function getScheduleById(string scheduleId) returns Schedule|error? {
 # + email - User email
 # + scheduleId - scheduleId
 # + return - Schedule with the given name or error
-public function getScheduleByName(string scheduleName, string email, string scheduleId) returns Schedule|error?{
-    Schedule|error result = dbClient->queryRow(getScheduleByNameQuery(scheduleName, email, scheduleId));
+public function getScheduleByName(string scheduleName, string email, string scheduleId) returns types:Schedule|error?{
+    types:Schedule|error result = dbClient->queryRow(getScheduleByNameQuery(scheduleName, email, scheduleId));
     if result is sql:NoRowsError{
         return ();
     }
     return result;
 }
+
+# Get details of the currently active schedule under the given user
+#
+# + email - User email
+# + return - active schedule or error
+public function getActiveSchedule(string email) returns types:Schedule|error?{
+    types:Schedule|error result = dbClient->queryRow(getActiveScheduleQuery(email));
+    if result is sql:NoRowsError{
+        return ();
+    }
+    return result;
+}
+
 
 # Get the count of not deleted scheduls under a given email
 #
@@ -175,7 +187,7 @@ public function getSchedulesCount(string email) returns int|error{
 # 
 # + schedule - The new schedule
 # + return - Success result 
-public function addNewSchedule(Schedule schedule) returns types:DbOperationSuccessResult|error {
+public function addNewSchedule(types:Schedule schedule) returns types:DbOperationSuccessResult|error {
     sql:ExecutionResult result = check dbClient->execute(addNewScheduleQuery(schedule));
     return result.cloneWithType(types:DbOperationSuccessResult);
 }
@@ -199,7 +211,7 @@ public function deleteScheduleById(string scheduleId, string email) returns type
 # + existingSchedule - Already present schedule 
 # + newScheduleDetails - New Details to be updated
 # + return - Success result or error
-public function updateSchedule(Schedule existingSchedule,Schedule newScheduleDetails) returns types:DbOperationSuccessResult|error {
+public function updateSchedule(types:Schedule existingSchedule,types:Schedule newScheduleDetails) returns types:DbOperationSuccessResult|error {
     newScheduleDetails.keys().forEach(function(string key) {
         existingSchedule[key] = newScheduleDetails[key];
     });
@@ -212,12 +224,23 @@ public function updateSchedule(Schedule existingSchedule,Schedule newScheduleDet
 #
 # + bookings - bookings array
 # + return - success result or error
-public function addBookingsFromSchedule(Booking[] bookings) returns types:DbOperationSuccessResult|error{
+public function addBookingsFromSchedule(types:Booking[] bookings) returns types:DbOperationSuccessResult|error{
     sql:ExecutionResult[] _ = check dbClient->batchExecute(addBookingsFromScheduleQuery(bookings));
     return {
         affectedRowCount:bookings.length()
     };
 }
+
+# Delete multiple bookings from a schedule
+#
+# + scheduleId - bookings array
+# + email - user email
+# + return - success result or error
+public function deleteBookingsByScheduleId(string scheduleId, string email) returns types:DbOperationSuccessResult|error{
+    sql:ExecutionResult result = check dbClient->execute(deleteBookingByScheduleIdQuery(scheduleId, email));
+    return result.cloneWithType(types:DbOperationSuccessResult);
+}
+
 
 # Activate a schedule and add bookings accordingly
 #
@@ -225,12 +248,11 @@ public function addBookingsFromSchedule(Booking[] bookings) returns types:DbOper
 # + email - User email  
 # + bookings - Bookings to be added
 # + return - Success result or erro
-public function activateSchedule(string scheduleId, string email, Booking[] bookings) returns types:DbOperationSuccessResult|error{
+public function activateSchedule(string scheduleId, string email, types:Booking[] bookings) returns types:DbOperationSuccessResult|error{
     transaction {        
         types:DbOperationSuccessResult|error addBookingResult = addBookingsFromSchedule(bookings);
         sql:ExecutionResult|error scheduleActivationResult = dbClient->execute(activateScheduleQuery(scheduleId, email));
         if addBookingResult is error || scheduleActivationResult is error{
-            io:println(addBookingResult,scheduleActivationResult);
             rollback;
             return error(utils:DATABASE_ERROR);
         } else{
@@ -240,6 +262,19 @@ public function activateSchedule(string scheduleId, string email, Booking[] book
     }
 }
 
+public function deactivateSchedule(string scheduleId, string email) returns types:DbOperationSuccessResult|error{
+    transaction {
+        types:DbOperationSuccessResult|error deleteBookingResult = deleteBookingsByScheduleId(scheduleId, email);
+        sql:ExecutionResult|error scheduleDeactivationResult = dbClient->execute(deactivateScheduleQuery(scheduleId, email));
+        if deleteBookingResult is error || scheduleDeactivationResult is error{
+            rollback;
+            return error(utils:DATABASE_ERROR);
+        } else{
+            check commit;
+            return deleteBookingResult;
+        }
+    }
+}
 
 
 

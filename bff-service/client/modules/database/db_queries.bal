@@ -7,13 +7,14 @@
 
 import ballerina/sql;
 import wso2_office_booking_service.utils;
+import wso2_office_booking_service.types;
 
 # Query to retrieve all bookings with a specific email
-# 
+#
 # + email - Email
 # + date - Date
 # + return - sql parameterized query
-function getAllBookingsQuery(string email, string date) returns sql:ParameterizedQuery{
+function getAllBookingsQuery(string email, string date) returns sql:ParameterizedQuery {
     return `
     SELECT 
         * 
@@ -29,10 +30,10 @@ function getAllBookingsQuery(string email, string date) returns sql:Parameterize
 }
 
 # Query to retrieve the booking details with a specific email and bookingId
-# 
+#
 # + bookingId - Bookind ID
 # + return - sql parameterized query
-function getBookingByIdQuery(string bookingId) returns sql:ParameterizedQuery{
+function getBookingByIdQuery(string bookingId) returns sql:ParameterizedQuery {
     return `
     SELECT 
         *
@@ -47,13 +48,13 @@ function getBookingByIdQuery(string bookingId) returns sql:ParameterizedQuery{
 }
 
 # Query to retrieve the booking details with a specific email and date
-# 
+#
 # + email - Email
-# + date -  Date
+# + date - Date
 # + bookingId - Booking ID
 # + return - sql parameterized query
-function getBookingByDateQuery(string email, string date, string bookingId) returns sql:ParameterizedQuery{
-    if bookingId==="none"{
+function getBookingByDateQuery(string email, string date, string bookingId) returns sql:ParameterizedQuery {
+    if bookingId === "none" {
         return `
         SELECT 
             *
@@ -65,7 +66,7 @@ function getBookingByDateQuery(string email, string date, string bookingId) retu
         LIMIT
             1
         `;
-    }else{
+    } else {
         return `
         SELECT 
             *
@@ -82,11 +83,11 @@ function getBookingByDateQuery(string email, string date, string bookingId) retu
 }
 
 # Query to delete the booking with a specific email and bookingId
-# 
+#
 # + bookingId - Bookind ID
 # + email - Email
 # + return - sql parameterized query
-function deleteBookingByIdQuery(string bookingId, string email) returns sql:ParameterizedQuery{
+function deleteBookingByIdQuery(string bookingId, string email) returns sql:ParameterizedQuery {
     return `
     DELETE
     FROM
@@ -98,11 +99,28 @@ function deleteBookingByIdQuery(string bookingId, string email) returns sql:Para
     `;
 }
 
+# Query to delete the booking with a specific email and bookingId
+#
+# + scheduleId - schedule ID
+# + email - Email
+# + return - sql parameterized query
+function deleteBookingByScheduleIdQuery(string scheduleId, string email) returns sql:ParameterizedQuery {
+    return `
+    DELETE
+    FROM
+        booking
+    WHERE 
+        schedule_id=${scheduleId}
+        AND email=${email}
+        AND status=${utils:UPCOMING}
+    `;
+}
+
 # Query to add a new booking
-# 
+#
 # + booking - new booking
 # + return - sql parameterized query
-function addNewBookingQuery(Booking booking) returns sql:ParameterizedQuery{
+function addNewBookingQuery(types:Booking booking) returns sql:ParameterizedQuery {
     return `
     INSERT INTO 
         booking
@@ -112,25 +130,25 @@ function addNewBookingQuery(Booking booking) returns sql:ParameterizedQuery{
 }
 
 # Query to delete the booking with a specific email and bookingId
-# 
+#
 # + booking - booking
 # + return - sql parameterized query
-function updateBookingQuery(Booking booking) returns sql:ParameterizedQuery{
+function updateBookingQuery(types:Booking booking) returns sql:ParameterizedQuery {
     return `
     UPDATE 
         booking
     SET 
-        date = ${utils:dateToDateString(booking.date)}, email = ${booking.email}, preferences = ${booking.preferences.toJsonString()}, status=${booking?.status}, active=${booking?.isActive}, schedule_id=${booking?.scheduleId===null?null:booking?.scheduleId.toString()}
+        date = ${utils:dateToDateString(booking.date)}, email = ${booking.email}, preferences = ${booking.preferences.toJsonString()}, status=${booking?.status}, active=${booking?.isActive}, schedule_id=${booking?.scheduleId === null ? null : booking?.scheduleId.toString()}
     WHERE 
         booking_id = ${booking.bookingId.toString()};
     `;
 }
 
 # Query to delete the booking with a specific email and booking_id
-# 
+#
 # + date - Date
 # + return - sql parameterized query
-function getTodaysBookingsQuery(string date) returns sql:ParameterizedQuery{
+function getTodaysBookingsQuery(string date) returns sql:ParameterizedQuery {
     return `
     SELECT
         booking_id, date, email, preferences, last_updated_at
@@ -149,7 +167,7 @@ function getTodaysBookingsQuery(string date) returns sql:ParameterizedQuery{
 #
 # + email - Email
 # + return - sql parameterizer query
-public function getAllSchedulesQuery(string email) returns sql:ParameterizedQuery{
+public function getAllSchedulesQuery(string email) returns sql:ParameterizedQuery {
     return `
     SELECT 
         *  
@@ -164,10 +182,10 @@ public function getAllSchedulesQuery(string email) returns sql:ParameterizedQuer
 }
 
 # Query to retrieve the schedule details with a specific email and bookingId
-# 
+#
 # + scheduleId - Schedule ID
 # + return - sql parameterized query
-function getScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery{
+function getScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery {
     return `
     SELECT 
         *
@@ -182,13 +200,13 @@ function getScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery{
 }
 
 # Query to retrieve the schedule details with a specific email and schedule_name
-# 
+#
 # + scheduleName - Schedule name
 # + email - email
 # + scheduleId - schedule ID
 # + return - sql parameterized query
-function getScheduleByNameQuery(string scheduleName, string email, string scheduleId = "none") returns sql:ParameterizedQuery{
-    if scheduleId=="none"{
+function getScheduleByNameQuery(string scheduleName, string email, string scheduleId = "none") returns sql:ParameterizedQuery {
+    if scheduleId == "none" {
         return `
         SELECT 
             *
@@ -201,7 +219,7 @@ function getScheduleByNameQuery(string scheduleName, string email, string schedu
         LIMIT
             1
         `;
-    }else{
+    } else {
         return `
         SELECT 
             *
@@ -218,7 +236,26 @@ function getScheduleByNameQuery(string scheduleName, string email, string schedu
     }
 }
 
-function getScheduleCountQuery(string email) returns sql:ParameterizedQuery{
+# Query to retrieve the schedule details with a specific email and schedule_name
+#
+# + email - email
+# + return - sql parameterized query
+function getActiveScheduleQuery(string email) returns sql:ParameterizedQuery {
+    return `
+    SELECT 
+        *
+    FROM
+        schedule
+    WHERE
+        deleted=false
+        AND active=true
+        AND email=${email}
+    LIMIT
+        1
+    `;
+}
+
+function getScheduleCountQuery(string email) returns sql:ParameterizedQuery {
     return `
     SELECT
         COUNT(*) as count
@@ -230,7 +267,7 @@ function getScheduleCountQuery(string email) returns sql:ParameterizedQuery{
     `;
 }
 
-function addNewScheduleQuery(Schedule schedule) returns sql:ParameterizedQuery{
+function addNewScheduleQuery(types:Schedule schedule) returns sql:ParameterizedQuery {
     return `
     INSERT INTO 
         schedule
@@ -239,7 +276,7 @@ function addNewScheduleQuery(Schedule schedule) returns sql:ParameterizedQuery{
     `;
 }
 
-function deleteScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery{
+function deleteScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQuery {
     return `
     UPDATE
         schedule
@@ -251,25 +288,27 @@ function deleteScheduleByIdQuery(string scheduleId) returns sql:ParameterizedQue
 }
 
 # Query to update a schedule
-# 
+#
 # + schedule - detaisl of the schedule to be updated
 # + return - sql parameterized query
-function updateScheduleQuery(Schedule schedule) returns sql:ParameterizedQuery{
+function updateScheduleQuery(types:Schedule schedule) returns sql:ParameterizedQuery {
     return `
     UPDATE 
         schedule
     SET 
         schedule_name = ${schedule.scheduleName}, recurring_mode = ${schedule.recurringMode}, active=${schedule.isActive}, preferences = ${schedule.preferences.toJsonString()}
     WHERE 
-        schedule_id = ${schedule.scheduleId};
+        schedule_id = ${schedule.scheduleId}
+        AND deleted = false
     `;
 }
 
-function addBookingsFromScheduleQuery(Booking[] bookings) returns sql:ParameterizedQuery[]{
-    return from var booking in bookings select addNewBookingQuery(booking);
+function addBookingsFromScheduleQuery(types:Booking[] bookings) returns sql:ParameterizedQuery[] {
+    return from var booking in bookings
+        select addNewBookingQuery(booking);
 }
 
-function activateScheduleQuery(string scheduleId, string email) returns sql:ParameterizedQuery{
+function activateScheduleQuery(string scheduleId, string email) returns sql:ParameterizedQuery {
     return `
     UPDATE
         schedule
@@ -278,5 +317,20 @@ function activateScheduleQuery(string scheduleId, string email) returns sql:Para
     WHERE
         schedule_id = ${scheduleId}
         AND email = ${email}
+        AND deleted = false
     `;
 }
+
+function deactivateScheduleQuery(string scheduleId, string email) returns sql:ParameterizedQuery {
+    return `
+    UPDATE
+        schedule
+    SET
+        active = false
+    WHERE
+        schedule_id = ${scheduleId}
+        AND email = ${email}
+        AND deleted = false
+    `;
+}
+

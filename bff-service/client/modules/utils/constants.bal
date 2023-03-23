@@ -9,7 +9,7 @@ public const DEFAULT_TIME_STRING_SUFFIX = "T00:00:00Z";
 
 public enum Status {
     BOOKED = "Booked",
-    UPDOMING = "Upcoming"
+    UPCOMING = "Upcoming"
 }
 
 public const ADD_BOOKING_CUTOFF_HOUR = 9;
@@ -34,7 +34,9 @@ public enum DefaultErrorMessages{
     NAME_ALREADY_EXISTS="An entry exists for the given name",
     DATE_ALREADY_EXISTS="An entry exists for the given date",
     CANNOT_EDIT_ACTIVE_SCHEDULE="Cannot edit an active schedule. Please deactivate before editing",
-    SCHEDULE_ALREADY_ACTIVE="Schedule is already active",
+    SCHEDULE_ACTIVE="The schedule is already active",
+    SCHEDULE_NOT_ACTIVE="The schedule is not active",
+    ACTIVE_SCHEDULE_EXIST="There's an already active schedule",
     CANNOT_EDIT_CONFIRMED_BOOKING="Cannot edit an already confirmed booking",
     NOT_MORE_THAN_3_SCHEDULES="Cannot save more than 3 schedules at a time. Try deleting a schedule before adding new one",
     PREFERENCE_EMPTY="Preferences cannot be empty",

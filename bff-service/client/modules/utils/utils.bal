@@ -8,7 +8,6 @@
 import ballerina/io;
 import ballerina/time;
 import wso2_office_booking_service.types;
-import wso2_office_booking_service.database;
 
 // Date & Time Helper Functions
 
@@ -183,16 +182,16 @@ public function checkBookingDateValidity(time:Date date) returns error? {
     }
 }
 
-public function getBookingListBySchedule(types:WeeklyPreferences weeklyPreferences, int recurringWeeks) returns database:Booking[]{
-    database:Booking[] bookings = [];
+public function getBookingListBySchedule(types:WeeklyPreferences weeklyPreferences, int recurringWeeks, string email, int scheduleId) returns types:Booking[]{
+    types:Booking[] bookings = [];
     // defining the closest date that a booking can be made
     time:Utc closestDateForBooking = time:utcNow();
-    if time:utcToCivil(closestDateForBooking).hour > utils:ADD_BOOKING_CUTOFF_HOUR {
+    if time:utcToCivil(closestDateForBooking).hour > ADD_BOOKING_CUTOFF_HOUR {
         closestDateForBooking = time:utcAddSeconds(time:utcNow(), 86400);
     }
 
     foreach string day in weeklyPreferences.keys() {
-        int? index = utils:DAYS_OF_WEEK.indexOf(day);
+        int? index = DAYS_OF_WEEK.indexOf(day);
         if index is () {
             continue;
         }
@@ -205,14 +204,13 @@ public function getBookingListBySchedule(types:WeeklyPreferences weeklyPreferenc
         foreach int i in 0 ..< recurringWeeks{
             io:println(i);
             time:Date date = time:utcToCivil(time:utcAddSeconds(firstBookingDate, 86400 * 7 * i));
-            bookings.push(<database:Booking>{
+            bookings.push(<types:Booking>{
                 date:date,
                 preferences:weeklyPreferences[day],
                 email:email,
-                scheduleId: schedule.scheduleId
+                scheduleId: scheduleId
             });
         }
     }
     return bookings;
 }
-
