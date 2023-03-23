@@ -1,0 +1,8 @@
+[package]
+org = "wso2digiops"
+name = "wso2_office_booking_cron_job"
+version = "0.1.0"
+distribution = "2201.3.2"
+
+[build-options]
+observabilityIncluded = true
