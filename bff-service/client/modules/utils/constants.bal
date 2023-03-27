@@ -10,7 +10,7 @@ public const DEFAULT_TIME_STRING_SUFFIX = "T00:00:00Z";
 public enum Status {
     BOOKED = "Booked",
     UPCOMING = "Upcoming"
-}
+};
 
 public const ADD_BOOKING_CUTOFF_HOUR = 9;
 public const SHOW_BOOKINGS_CUTOFF_HOUR = 15;
@@ -21,11 +21,10 @@ public enum DateValidateErrorMessages{
     INVALID_DATE = "Invalid date",
     TODAY_NOT_ALLOWED = "A booking cannot be made for today at this time",
     WEEKEND_DATE = "Cannot add bookings for weekends"
-}
-
-public const INTERNAL_ERROR = "Internal error occured";
+};
 
 public enum DefaultErrorMessages{
+    INTERNAL_ERROR = "Internal error occured",
     ID_NOT_FOUND="Cannot find ID",
     CANNOT_RETRIEVE_FROM_DB="Could not retrieve details from the database",
     CANNOT_ADD_ENTRY="Could not add new entry",
@@ -57,8 +56,8 @@ public enum Days{
     Wednesday="wednesday",
     Thursday="thursday",
     Friday="friday"
-}
+};
 
-public enum AvailableMeals{
-    Lunch="Lunch"
-}
+public final map<string[]> AVAILABLE_MEALS = {
+    Lunch:["Chicken", "Fish", "Egg", "Veg"]
+};

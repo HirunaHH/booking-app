@@ -25,6 +25,13 @@ import ballerina/time;
 
 service / on new http:Listener(9090) {
 
+    # Get the meal options available
+    # 
+    # + return - map object with the available meal options
+    resource function get get\-meal\-options() returns map<string[]>{
+        return utils:AVAILABLE_MEALS;
+    }
+
     # Get all bookings recorded under the user email
     #
     # + email - User email
